@@ -32,7 +32,3 @@ void merge(int *array, int *temp, int lowIndex, int highIndex);
 void arrayCopy(int *srcArray, int index1, int *desArray, int index2, int length);
 
 void shellSort(int *array, int length);
-
-void merge_sort(int arr[], const int len);
-
-void merge_sort_recursive(int arr[], int reg[], int start, int end);

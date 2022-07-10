@@ -19,7 +19,7 @@ int main(void)
     array = myRand(size);
     printf("排序之前：\n");
     myPrint(array, size);
-    merge_sort(array, size);
+    mergeSort(array, size);
     printf("排序之后：\n");
     myPrint(array, size);
 
@@ -156,7 +156,7 @@ void shellSort(int *array, int length)
 }
 
 // 归并排序
-void mergeSort(int *array, int length)
+void mergeSort(int *array, const int length)
 {
     int temp[length];
     merge(array, temp, 0, length - 1);
@@ -165,7 +165,7 @@ void mergeSort(int *array, int length)
 void merge(int *array, int *temp, int lowIndex, int highIndex)
 {
     if (lowIndex >= highIndex) return;
-    int length = highIndex - lowIndex - 1, mid = (length >> 1) + lowIndex;
+    int mid = (lowIndex + highIndex) / 2;
     int start1 = lowIndex, end1 = mid;
     int start2 = mid + 1, end2 = highIndex;
     merge(array, temp, start1, end1);
@@ -187,31 +187,8 @@ void merge(int *array, int *temp, int lowIndex, int highIndex)
     // 将temp内的数据复制回array
     for(index = lowIndex; index <= highIndex; index++)
     {
-        array[index] = array[index];
+        array[index] = temp[index];
     }
-}
-
-void merge_sort_recursive(int arr[], int reg[], int start, int end) {
-    if (start >= end)
-        return;
-    int len = end - start, mid = (len >> 1) + start;
-    int start1 = start, end1 = mid;
-    int start2 = mid + 1, end2 = end;
-    merge_sort_recursive(arr, reg, start1, end1);
-    merge_sort_recursive(arr, reg, start2, end2);
-    int k = start;
-    while (start1 <= end1 && start2 <= end2)
-        reg[k++] = arr[start1] < arr[start2] ? arr[start1++] : arr[start2++];
-    while (start1 <= end1)
-        reg[k++] = arr[start1++];
-    while (start2 <= end2)
-        reg[k++] = arr[start2++];
-    for (k = start; k <= end; k++)
-        arr[k] = reg[k];
-}
-void merge_sort(int arr[], const int len) {
-    int reg[len];
-    merge_sort_recursive(arr, reg, 0, len - 1);
 }
 
 // 复制数组
