@@ -4,6 +4,8 @@
 
 int *getNext(char *pattern);
 int KMP(char *str, char *pattern);
+int brute(char *str, char *pattern);
+int brute_(char *str, char *pattern, int index);
 
 int main(void)
 {
@@ -14,7 +16,8 @@ int main(void)
     while((ch = getchar()) != '\n');
     printf("Please enter a pattern string: ");
     scanf("%s", pattern);
-    printf("The index: %d\n", KMP(str, pattern));
+    printf("The KMP algorithm: index = %d\n", KMP(str, pattern));
+    printf("The brute algorithm: index = %d\n", brute(str, pattern));
     getchar();
     return 0;
 }
@@ -43,7 +46,7 @@ int *getNext(char *pattern)
                 prefix_len = next[prefix_len - 1];
             }
         }
-    }
+    } 
     return next;
 }
 
@@ -76,4 +79,29 @@ int KMP(char *str, char *pattern)
     }
     free(next); // 释放内存
     return index;
+}
+
+int brute(char *str, char *pattern)
+{
+    return brute_(str, pattern, 0);
+}
+// 暴力匹配算法
+int brute_(char *str, char *pattern, int index)
+{
+    int i = 0;
+    while(index < strlen(str) && i < strlen(pattern))
+    {
+        if(str[index] == pattern[i])
+        {
+            index++;
+            i++;
+        }
+        else
+        {
+            i = 1;
+            index = index - i + 1;
+        }
+    }
+    if(i == strlen(pattern)) return index - i;
+    return -1; 
 }
