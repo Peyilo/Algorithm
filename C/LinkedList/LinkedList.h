@@ -4,13 +4,10 @@
 
 #ifndef LINKEDLIST_LINKEDLIST_H
 #define LINKEDLIST_LINKEDLIST_H
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 
-/* 状态代码Status */
-#define OK 1
-#define ERROR 0
-#define OVERFLOW -2
-
-typedef int Status;
 typedef double ElemType;
 typedef struct Node
 {
@@ -18,12 +15,18 @@ typedef struct Node
     struct Node *next;
 }Node, *LinkedList; // 可以定义多个别名
 
-LinkedList initList();
+bool initList(LinkedList *pList);
+
 int getLength(LinkedList list);
+
 ElemType getElem(LinkedList list, int index);
-Status listInsert(LinkedList list, int index, ElemType elem);
-Status listDelete(LinkedList list, int index, ElemType *pElem);
+
+bool listInsert(LinkedList list, int index, ElemType elem);
+
+ElemType listDelete(LinkedList list, int index);
+
 void mergeList(LinkedList list1, LinkedList list2);
+
 void destroyList(LinkedList list);
 
 #endif //LINKEDLIST_LINKEDLIST_H

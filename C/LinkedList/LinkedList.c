@@ -3,13 +3,14 @@
 //
 
 #include "LinkedList.h"
-#include <stdlib.h>
 
-LinkedList initList()
+
+bool initList(LinkedList *pList)
 {
-    LinkedList list = (LinkedList) malloc(sizeof(Node)); // 必须得使用动态内存分配
-    list->next = NULL;
-    return list;
+    *pList = (LinkedList) malloc(sizeof(Node)); // 必须得使用动态内存分配
+    if(!*pList) return false;
+    (*pList)->next = NULL;
+    return true;
 }
 
 int getLength(LinkedList list)
@@ -28,47 +29,62 @@ ElemType getElem(LinkedList list, int index)
 {
     int count = 0;
     list = list->next;
-    while(list && count < index)
+    while(list && count < index) // 定位下标为index的元素
     {
         list = list->next;
         count++;
+    }
+    if(!list || index < 0)
+    {
+        printf("index out of range.\n");
+        exit(-1);
     }
     return list->data;
 }
 
 // 链表的插入
-Status listInsert(LinkedList list, int index, ElemType elem)
+// 因为没必要修改LinkedList本身的信息（头结点），所以没必要传入LinkedList的引用
+bool listInsert(LinkedList list, int index, ElemType elem)
 {
     int count = -1;
-    while(list && count < index - 1)
+    while(list && count < index - 1) // 定位到下标为index-1的元素
     {
         list = list->next;
         count++;
     }
-    if(!list || index < 0) return ERROR;
+    if(!list || index < 0)
+    {
+        printf("Index error!\n");
+        exit(-1);
+    }
     LinkedList temp = (LinkedList)malloc(sizeof(Node));
-    if(!temp) exit(OVERFLOW);
+    if(!temp) return false;
     temp->data = elem;
     temp->next = list->next; // 让新结点next指针指向index的结点
     list->next = temp; // 让新结点称为index - 1的下一个结点
-    return OK;
+    return true;
 }
 
 // 链表元素的删除
-Status listDelete(LinkedList list, int index, ElemType *pElem)
+ElemType listDelete(LinkedList list, int index)
 {
     int count = -1;
-    while(list && count < index - 1)
+    while(list && count < index - 1) // 定位到下标为index-1的元素
     {
         list = list->next;
         count++;
     }
-    if(!list || index < 0) return ERROR;
+    // 如果下标index的元素不存在或者index<0就表示index错误
+    if(!(list->next) || index < 0)
+    {
+        printf("Index error!\n");
+        exit(-1);
+    }
     LinkedList temp = list->next; // temp就是指向index的指针
     list->next = temp->next; // 让index-1的结点直接指向index+1结点
-    *pElem = temp->data;
+    ElemType elem = temp->data;
     free(temp); // 释放内存
-    return OK;
+    return elem;
 }
 
 void mergeList(LinkedList list1, LinkedList list2)
