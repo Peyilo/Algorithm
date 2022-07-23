@@ -1,11 +1,19 @@
+/**
+ * @file KMP.c
+ * @author your name (you@domain.com)
+ * @brief 字符串的模式匹配 
+ * @version 0.1
+ * @date 2022-07-23
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-int *getNext(char *pattern);
-int KMP(char *str, char *pattern);
-int brute(char *str, char *pattern);
-int brute_(char *str, char *pattern, int index);
+int KMP(char *str, char *pattern, int index);
+int brute(char *str, char *pattern, int index);
 
 int main(void)
 {
@@ -16,92 +24,77 @@ int main(void)
     while((ch = getchar()) != '\n');
     printf("Please enter a pattern string: ");
     scanf("%s", pattern);
-    printf("The KMP algorithm: index = %d\n", KMP(str, pattern));
-    printf("The brute algorithm: index = %d\n", brute(str, pattern));
+    printf("The KMP algorithm: index = %d\n", KMP(str, pattern, 0));
+    printf("The brute algorithm: index = %d\n", brute(str, pattern, 0));
     getchar();
     return 0;
 }
 
-// 生成next数组（最长公共前后缀数组）
+// 生成next数组（最长公共前后缀数组），时间复杂度O(m)
 int *getNext(char *pattern)
 {
     int *next = (int*)malloc(strlen(pattern) * sizeof(int));
     next[0] = 0;
-    int prefix_len = 0, i = 1;
+    int i = 1, j = 0;
     while(i < strlen(pattern))
     {
-        if(pattern[prefix_len] == pattern[i])
+        if(pattern[i] == pattern[j])
         {
-            prefix_len++;
-            next[i++] = prefix_len;
+            next[i++] = ++j;
+        }
+        else if(j == 0)
+        {
+            next[i++] = 0;
         }
         else
-        {
-            if(prefix_len == 0)
-            {
-                next[i++] = 0;
-            }
-            else
-            {
-                prefix_len = next[prefix_len - 1];
-            }
-        }
-    } 
-    return next;
-}
-
-// KMP算法匹配字符串子串
-int KMP(char *str, char *pattern)
-{
-    int index = -1; // 如果匹配失败，则返回-1
-    int *next = getNext(pattern);
-    int i = 0, j = 0;  // i指向str首元素，j指向pattern首元素
-    while(i < strlen(str))
-    {
-        if(str[i] == pattern[j])
-        {
-            i++;
-            j++;
-        }
-        else if(j > 0)
         {
             j = next[j - 1];
         }
-        else // 子串的首字母匹配失败
+    }
+    return next;
+}
+
+// KMP算法匹配字符串子串，时间复杂度O(m+n)
+int KMP(char *str, char *pattern, int pos)
+{
+    int *next = getNext(pattern);
+    int i = pos, j = 0;  // j指向pattern首元素
+    while(i < strlen(str) && j < strlen(pattern))
+    {
+        if(str[i] == pattern[j])
+        {
+            i++; j++;
+        }
+        else if(j == 0) // 子串的首字母匹配失败
         {
             i++;
         }
-        if (j == strlen(pattern)) // 表示已经完全匹配成功
+        else 
         {
-            index = i - j;
-            break;
+            j = next[j - 1];
         }
     }
     free(next); // 释放内存
-    return index;
+    if(j == strlen(pattern)) return i - j;
+    return -1;
 }
 
-int brute(char *str, char *pattern)
+// 暴力匹配算法，时间复杂度O(m*n)
+int brute(char *str, char *pattern, int pos)
 {
-    return brute_(str, pattern, 0);
-}
-// 暴力匹配算法
-int brute_(char *str, char *pattern, int index)
-{
-    int i = 0;
-    while(index < strlen(str) && i < strlen(pattern))
+    int i = pos, j = 0;
+    while(i < strlen(str) && j < strlen(pattern))
     {
-        if(str[index] == pattern[i])
+        if(str[i] == pattern[j])
         {
-            index++;
-            i++;
+            i++; j++;
         }
         else
         {
-            i = 1;
-            index = index - i + 1;
+            i = i - j + 1; // 将index定位到基点下一位
+            j = 0; // 子串重新开始进行匹配
         }
     }
-    if(i == strlen(pattern)) return index - i;
+    if(j == strlen(pattern)) return i - j;
     return -1; 
 }
