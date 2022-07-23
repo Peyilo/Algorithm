@@ -3,14 +3,14 @@
 //
 
 #include "SequenceList.h"
-#include <stdlib.h>
-Status initList(SqList *pList)
+
+bool initList(SqList *pList)
 {
     pList->elem = (ElemType*)malloc(INITSIZE * sizeof(ElemType));
-    if(!pList->elem) exit(OVERFLOW);
+    if(!pList->elem) return false;
     pList->length = 0;
     pList->size = INITSIZE;
-    return OK;
+    return true;
 }
 
 void destroyList(SqList *pList)
@@ -25,9 +25,9 @@ void clearList(SqList *pList)
     pList->length = 0;
 }
 
-Status listEmpty(SqList list)
+bool listEmpty(SqList list)
 {
-    return list.length == 0 ? TRUE : FALSE;
+    return list.length == 0 ? true : false;
 }
 
 int listLength(SqList list)
@@ -35,14 +35,17 @@ int listLength(SqList list)
     return list.length;
 }
 
-Status getElem(SqList list, int index, ElemType *pElem)
+ElemType getElem(SqList list, int index)
 {
-    if(index > list.length - 1 || index < 0) return ERROR;
-    *pElem = list.elem[index];
-    return OK;
+    if(index > list.length - 1 || index < 0)
+    {
+        printf("Index error!\n");
+        exit(-1);
+    }
+    return list.elem[index];
 }
 
-int locateElem(SqList list, ElemType elem, Status (*compare)(ElemType, ElemType))
+int locateElem(SqList list, ElemType elem, bool (*compare)(ElemType, ElemType))
 {
     int index = -1;
     for(int i = 0; i < list.length; i++)
@@ -56,37 +59,43 @@ int locateElem(SqList list, ElemType elem, Status (*compare)(ElemType, ElemType)
     return index;
 }
 
-Status equal(ElemType elem1, ElemType elem2)
+bool equal(ElemType elem1, ElemType elem2)
 {
-    if(elem1 == elem2) return TRUE;
-    return FALSE;
+    if(elem1 == elem2) return true;
+    return false;
 }
 
-Status priorElem(SqList list, ElemType curElem, ElemType *pPreElem)
-{
-    int index = locateElem(list, curElem, equal);
-    if(index < 1) return ERROR;
-    getElem(list, index - 1, pPreElem);
-    return OK;
-}
-
-Status nextElem(SqList list, ElemType curElem, ElemType *pNextElem)
+ElemType priorElem(SqList list, ElemType curElem)
 {
     int index = locateElem(list, curElem, equal);
-    if(index < 0 || index == list.length - 1) return ERROR;
-    getElem(list, index + 1, pNextElem);
-    return OK;
+    if(index < 1)
+    {
+        printf("Index error!\n");
+        exit(-1);
+    }
+    return getElem(list, index - 1);
 }
 
-Status listInsert(SqList *pList, int index, ElemType elem)
+ElemType nextElem(SqList list, ElemType curElem)
+{
+    int index = locateElem(list, curElem, equal);
+    if(index < 0 || index == list.length - 1)
+    {
+        printf("Index error!\n");
+        exit(-1);
+    }
+    return getElem(list, index + 1);
+}
+
+bool listInsert(SqList *pList, int index, ElemType elem)
 {
     // 处理下标越界问题
-    if(index < 0 || index > pList->length) return ERROR;
+    if(index < 0 || index > pList->length) return false;
     // 处理顺序表容量不够问题
     if(pList->length >= pList->size)
     {
         ElemType *temp = (ElemType*)realloc(pList->elem, (pList->size + LISTINCREMENT) * sizeof(ElemType));
-        if(!temp) exit(OVERFLOW);
+        if(!temp) return false;
         pList->elem = temp;
         pList->size += LISTINCREMENT;
     }
@@ -98,7 +107,7 @@ Status listInsert(SqList *pList, int index, ElemType elem)
     // 插入目标元素
     pList->elem[index] = elem;
     pList->length++; // 表长增加1
-    return OK;
+    return true;
 }
 
 void mergeList(SqList list1, SqList list2, SqList *pList)
@@ -128,32 +137,36 @@ void mergeList(SqList list1, SqList list2, SqList *pList)
 }
 
 // 删除顺序线性表中下标为index的元素，并使用pElem返回删除的值
-Status listDelete(SqList *pList, int index, ElemType *pElem)
+ElemType listDelete(SqList *pList, int index)
 {
-    if(index < 0 || index > pList->length - 1) return ERROR;
-    getElem(*pList, index, pElem);
+    if(index < 0 || index > pList->length - 1)
+    {
+        printf("Index error!\n");
+        exit(-1);
+    }
+    ElemType temp = getElem(*pList, index);
     for(int i = index + 1; i < pList->length; i++)
     {
         pList->elem[i - 1] = pList->elem[i];
     }
     pList->length--;
-    return OK;
+    return temp;
 }
 
-Status listTraverse(SqList list, Status (*visit)(ElemType elem))
+void listTraverse(SqList list, void (*visit)(ElemType elem))
 {
     int i = 0;
-    while(i < list.length && visit(list.elem[i]))
+    while(i < list.length)
     {
+        visit(getElem(list, i));
         i++;
     }
-    return i == list.length ? OK : ERROR;
 }
 
-void minList(SqList *pList)
+bool minList(SqList *pList)
 {
     ElemType *temp = (ElemType*)malloc(pList->length * sizeof(ElemType));
-    if(!temp) exit(OVERFLOW);
+    if(!temp) return false;
     for(int i = 0; i < pList->length; i++)
     {
         temp[i] = pList->elem[i];
@@ -161,4 +174,5 @@ void minList(SqList *pList)
     free(pList->elem);
     pList->elem = temp;
     pList->size = pList->length;
+    return true;
 }
