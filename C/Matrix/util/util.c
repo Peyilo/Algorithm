@@ -46,10 +46,15 @@ int gcd_n(int len, int list[])
 // 求最小公倍数
 int lcm(int num1, int num2)
 {
-    if (isPrime(num1) || isPrime(num2))
-        return num1 * num2;
-    int gcdNum = gcd(num1, num2);
-    return gcdNum * lcm(num1 / gcdNum, num2 / gcdNum);
+    num1 = abs(num1);
+    num2 = abs(num2);
+    int lcmNum = num1 > num2 ? num1 : num2;
+    while(true)
+    {
+        if (lcmNum % num1 == 0 && lcmNum % num2 == 0)
+            return lcmNum;
+        lcmNum++;
+    }
 }
 
 // 对n个数求最小公倍数
