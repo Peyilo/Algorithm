@@ -27,11 +27,11 @@ void printMatrix(Matrix matrix);
 
 Matrix *multiMatrix(Matrix a, Matrix b);
 
-Matrix transformation(Matrix *pMatrix, int colIndex, bool flag);
+Matrix transformation(Matrix *pMatrix, int colIndex, bool flag, bool integer);
 
-int calcTransResult(Matrix *pMatrix, bool flag);
+int calcTransResult(Matrix *pMatrix, bool flag, bool integer);
 
-Matrix simplifyRow(Matrix *pMatrix, int rowIndex);
+Matrix simplifyRow(Matrix *pMatrix, int rowIndex, bool flag, bool integer);
 
 int getRank_A(Matrix matrix);
 

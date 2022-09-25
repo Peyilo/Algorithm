@@ -13,8 +13,20 @@ int main(void)
     Matrix *pMatrix = initMatrix(row, col);
     inputMatrix(pMatrix);           // 处理输入
     printMatrix(*pMatrix);
-
-    calcTransResult(pMatrix, true);     // 进行初等行变换
+    printf("yes or no?(y/n)\n");
+    int ch;
+    while ((ch = getchar()) != 'y' && ch != 'n')
+    {
+        printf("yes or no?(y/n)\n");
+        while(getchar() != '\n')        // 处理缓冲区剩余字符
+            continue;
+    }
+    bool integer;
+    if (ch == 'y')
+        integer = true;
+    else
+        integer = false;
+    calcTransResult(pMatrix, true, integer);     // 进行初等行变换
 
     destroyMatrix(pMatrix);             // 释放内存
     printf("Press 'Enter' key to end the program . . .");

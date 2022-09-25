@@ -177,15 +177,15 @@ void addRowToRow(Matrix *pMatrix, int rowIndex1, Fraction fraction, int rowIndex
     destroyMatrix(vector);
 }
 
-// 将矩阵某行化为最简形式
-Matrix simplifyRow(Matrix *pMatrix, int rowIndex)
+
+void transInt(Matrix *pMatrix, int rowIndex, bool flag)
 {
     int col = pMatrix->col, count = 0;      // count对非0项计数
     for (int i = 0; i < col; i++)
         if (getFraction(*pMatrix, rowIndex, i + 1)->numerator != 0)
             count++;
-    if (count == 0)                         // 表示所有项全为0
-        return *pMatrix;
+    if (count == 0)                         // 所有项全为0就直接返回
+        return;
     int list[count];
     count = 0;
     for (int i = 0; i < col; i++)           // 将所有非零项添加进数组list中
@@ -195,7 +195,6 @@ Matrix simplifyRow(Matrix *pMatrix, int rowIndex)
             list[count++] = pFraction->denominator;
     }
     int lcmNum = lcm_n(count, list);        // 求出最小公倍数lcmNum以后，将其与矩阵相应的行相乘
-    multiNumToRow(pMatrix, rowIndex, lcmNum);   // 使该行所有fraction的分母为1
     count = 0;
     for (int i = 0; i < col; i++)           // 求出最大公约数，对该行所有项进行约分
     {
@@ -204,22 +203,65 @@ Matrix simplifyRow(Matrix *pMatrix, int rowIndex)
             list[count++] = pFraction->numerator;
     }
     int gcdNum = gcd_n(count, list);
-    if (gcdNum != 1)
-    {
-        Fraction temp;
-        initFraction(1, gcdNum, &temp);
-        multiFractionToRow(pMatrix, rowIndex, temp);
-    }
+    Fraction multiplier;
+    initFraction(lcmNum, gcdNum, &multiplier);
+    if (multiplier.numerator == multiplier.denominator ||
+                    multiplier.numerator == -multiplier.denominator)
+        return;
+    multiFractionToRow(pMatrix, rowIndex, multiplier);
 
-    // 使该行首个非零项为1
+    if (flag)
+    {
+        if (multiplier.denominator != 1)
+        {
+            printf("#Calc %d/%d * Row%d\n", multiplier.numerator, multiplier.denominator, rowIndex);
+            printMatrix(*pMatrix);
+        }
+        else
+        {
+            printf("#Calc %d * Row%d\n", multiplier.numerator, rowIndex);
+            printMatrix(*pMatrix);
+        }
+    }
+}
+
+// 将矩阵某行化为最简形式
+Matrix simplifyRow(Matrix *pMatrix, int rowIndex, bool flag, bool integer)
+{
+    if (integer)
+        transInt(pMatrix, rowIndex, flag);          // 使该行每一项都为最小整数
+    // 使该行首个非零项为1或正数
     for (int i = 0; i < pMatrix->col; i++)
     {
         Fraction *temp = getFraction(*pMatrix, rowIndex, i + 1);
+        if (temp->numerator == temp->denominator)
+            break;
         if (temp->numerator != 0)
         {
             Fraction temp0;
-            initFraction(temp->denominator, temp->numerator, &temp0);
+            if (!integer)
+                initFraction(temp->denominator, temp->numerator, &temp0);
+            else
+            {
+                if (isNegative(*temp))
+                    initFraction(-1, 1, &temp0);
+                else
+                    break;
+            }
             multiFractionToRow(pMatrix, rowIndex, temp0);
+            if (flag)
+            {
+                if (temp0.denominator == 1)
+                {
+                    printf("#Calc %d * Row%d\n", temp0.numerator, rowIndex);
+                    printMatrix(*pMatrix);
+                }
+                else
+                {
+                    printf("#Calc %d/%d * Row%d\n", temp0.numerator, temp0.denominator, rowIndex);
+                    printMatrix(*pMatrix);
+                }
+            }
             break;
         }
     }
@@ -321,7 +363,7 @@ static int selectRow(Matrix matrix, int colIndex, bool flag)
 }
 
 // 进行一轮初等行变换
-Matrix transformation(Matrix *pMatrix, int colIndex, bool flag)
+Matrix transformation(Matrix *pMatrix, int colIndex, bool flag, bool integer)
 {
     int row = pMatrix->row, col = pMatrix->col;
     int basicIndex = selectRow(*pMatrix, colIndex, flag);
@@ -363,12 +405,16 @@ Matrix transformation(Matrix *pMatrix, int colIndex, bool flag)
 }
 
 // 计算初等行变换最终结果，返回矩阵的秩
-int calcTransResult(Matrix *pMatrix, bool flag)
+int calcTransResult(Matrix *pMatrix, bool flag, bool integer)
 {
     for (int i = 0; i < pMatrix->col; i++)
-        transformation(pMatrix, i + 1, flag);
+        transformation(pMatrix, i + 1, flag, integer);
     for (int i = 0; i < pMatrix->row; i++)
-        simplifyRow(pMatrix, i + 1);
+        simplifyRow(pMatrix, i + 1, flag, integer);
+
+    // 检查，待优化
+    for (int i = 0; i < pMatrix->row; i++)
+        simplifyRow(pMatrix, i + 1, false, integer);
     int rank = getRank_B(*pMatrix);
     printf("#Result Rank = %d:\n", rank);
     printMatrix(*pMatrix);
