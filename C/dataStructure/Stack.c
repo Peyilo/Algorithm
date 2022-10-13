@@ -5,8 +5,8 @@
 #include "Stack.h"
 #include <stdlib.h>
 
-#define INITSIZE 20
-#define INCREMENTSIZE 10
+#define STACK_INITSIZE 20
+#define STACK_INCREMENTSIZE 10
 
 /**
  * 初始化一个栈
@@ -15,11 +15,11 @@
  */
 bool stack_init(Stack *pstack)
 {
-    stack_ele *pEle = malloc(sizeof(stack_ele) * INITSIZE);
-    if (!pEle) return false;
-    pstack->base = pEle;
-    pstack->top = pEle;
-    pstack->size = INITSIZE;
+    stack_ele *pele = malloc(sizeof(stack_ele) * STACK_INITSIZE);
+    if (!pele) return false;
+    pstack->base = pele;
+    pstack->top = pele;
+    pstack->size = STACK_INITSIZE;
     return true;
 }
 
@@ -52,11 +52,11 @@ bool stack_push(Stack *pstack, stack_ele ele)
 {
     if (pstack->top - pstack->base == pstack->size)     // 栈的容量已经满了，需要重新分配空间
     {
-        stack_ele *temp = realloc(pstack->base, sizeof(stack_ele) * (pstack->size + INCREMENTSIZE));
+        stack_ele *temp = realloc(pstack->base, sizeof(stack_ele) * (pstack->size + STACK_INCREMENTSIZE));
         if (!temp) return false;
         pstack->base = temp;
         pstack->top = temp + pstack->size;
-        pstack->size += INCREMENTSIZE;
+        pstack->size += STACK_INCREMENTSIZE;
     }
     *pstack->top = ele;
     pstack->top++;

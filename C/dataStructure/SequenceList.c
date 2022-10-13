@@ -5,8 +5,8 @@
 #include "SequenceList.h"
 #include <stdlib.h>
 
-#define INITSIZE 20
-#define INCREMENTSIZE 10
+#define SEQLIST_INITSIZE 20
+#define SEQLIST_INCREMENTSIZE 10
 
 /**
  * 顺序表的初始化
@@ -15,10 +15,10 @@
  */
 bool seqlist_init(SequenceList *plist)
 {
-    seqlist_ele *pele = malloc(sizeof(seqlist_ele) * INITSIZE);
+    seqlist_ele *pele = malloc(sizeof(seqlist_ele) * SEQLIST_INITSIZE);
     if (!pele) return false;
     plist->length = 0;
-    plist->size = INITSIZE;
+    plist->size = SEQLIST_INITSIZE;
     plist->data = pele;
     return true;
 }
@@ -56,9 +56,9 @@ bool seqlist_insert(SequenceList *plist, int index, seqlist_ele ele)
     if (plist->length == plist->size)   // 如果顺序表容量已经满了，需要重新分配内存
     {
         seqlist_ele *temp = realloc(plist->data,
-                                    sizeof(seqlist_ele) * (plist->length + INCREMENTSIZE));
+                                    sizeof(seqlist_ele) * (plist->length + SEQLIST_INCREMENTSIZE));
         if (!temp) return false;
-        plist->size += INCREMENTSIZE;
+        plist->size += SEQLIST_INCREMENTSIZE;
         plist->data = temp;
     }
     for (int i = index; i < plist->length; i++) // 将下标index开始的元素向后移一位
