@@ -3,7 +3,7 @@
 //
 //  KMP算法以及暴力算法测试
 
-#include "../util/strutils.h"
+#include "../utils/strutils.h"
 #include <stdio.h>
 
 int main(void)
