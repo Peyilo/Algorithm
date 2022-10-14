@@ -28,7 +28,7 @@ add_library(Algorithm library.c library.h
         string/utils/pattern_match.c string/utils/strutils.h string/utils/strutils.c
         number/digitalutils.c number/digitalutils.h string/utils/rpn_expression.c
         string/utils/ds/rpn_datastructure.c string/utils/ds/rpn_datastructure.h
-        utils/errorutils.c utils/errorutils.h dataStructure/BSTree.c dataStructure/BSTree.h)
+        utils/errorutils.c utils/errorutils.h dataStructure/BSTree.c dataStructure/BSTree.h dataStructure/AVLTree.c dataStructure/AVLTree.h)
 
 # 测试顺序表
 add_executable(example_seqlist dataStructure/examples/seqlist/base.c
@@ -78,5 +78,8 @@ add_executable(test_errorutils utils/test/test_errorutils.c
         utils/errorutils.h utils/errorutils.c)
 
 
-add_executable(example_BSTree dataStructure/BSTree.c dataStructure/BSTree.h
-        utils/errorutils.h utils/errorutils.c dataStructure/examples/BSTree/basic.c)
+add_executable(example_BST dataStructure/BSTree.c dataStructure/BSTree.h
+        utils/errorutils.h utils/errorutils.c dataStructure/examples/BST/basic.c)
+
+add_executable(example_AVL dataStructure/AVLTree.c dataStructure/AVLTree.h
+        utils/errorutils.h utils/errorutils.c dataStructure/examples/AVL/basic.c)
