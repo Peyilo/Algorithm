@@ -33,6 +33,8 @@ void avl_print_preorder(AVLTree tree);
 
 void avl_print_postorder(AVLTree tree);
 
+void avl_print_levelorder(AVLTree tree);
+
 #ifdef __cplusplus
 }
 #endif
