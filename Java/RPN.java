@@ -1,151 +1,142 @@
-package Algorithm;
+package com.anvei.algorithm;
+
 import java.util.*;
 
 public class RPN {
 
-    final double eps = 1e-10;  // 精度范围
+    // 中缀表达式转逆波兰式过程中，用于存储操作符的栈
+    private final Stack<String> opStack = new Stack<>();
 
-    ArrayList<String> infixString = new ArrayList<>(); // 中缀表达式
-    ArrayList<String> suffixString = new ArrayList<>(); // 后缀表达式
+    // 存储表达式分割后获取的中缀表达式tokens
+    private final List<String> infixExpression = new ArrayList<>();
 
-    Stack<String> opStack = new Stack<>();         //运算符栈
-    Map<String,Integer> opMap = new HashMap<>();   //运算符优先级
+    // 存储逆波兰式tokens
+    private final List<String> suffixExpression = new ArrayList<>();
+
+    // 存储操作符及其优先级
+    private final Map<String ,Integer> operand = new HashMap<>();
+
+    // 将要计算的字符串表达式
+    private String expression;
 
     public RPN() {
-        //存入优先级关系
-        opMap.put("(", 0);
-        opMap.put("+", 1);
-        opMap.put("-", 1);
-        opMap.put("*", 2);
-        opMap.put("/", 2);
+        operand.put("+", 1);        // 初始化操作符 Map
+        operand.put("-", 1);        // 设置优先级，数值越大优先级越高
+        operand.put("*", 2);
+        operand.put("/", 2);
+        operand.put("^", 2);
     }
 
+    public RPN(String expression) {
+        this();
+        this.expression = expression;
+    }
 
-    public String getResult(String input) {
-        //分割字符串
-        infixString.clear();
-        StringTokenizer stringTokenizer = new StringTokenizer(input, "+-*/()",true);
-        while(stringTokenizer.hasMoreTokens()) {
-            String temp = stringTokenizer.nextToken().strip();
-            if (!temp.equals(""))
-                infixString.add(temp);
-        }
-        System.out.println("中缀表达式：" + infixString);
+    public void setExpression(String expression) {
+        this.expression = expression;
+        opStack.clear();
+        infixExpression.clear();
+        suffixExpression.clear();
+    }
+
+    public String getResult() {
+        splitInfix();
         infixToSuffix();
-        return computeSuffix();
+        return calcSuffixExpression();
     }
 
+    /**
+     * 将完整的表达式进行切割，获取中缀表达式tokens
+     */
+    private void splitInfix() {
+        infixExpression.clear();
+        StringTokenizer tokenizer = new StringTokenizer(expression, "+-*/^()", true);
+        while (tokenizer.hasMoreTokens()) {
+            String temp = tokenizer.nextToken().strip();
+            if (!temp.equals("")) {
+                infixExpression.add(temp);
+            }
+        }
+    }
 
-    //中缀转后缀
+    /**
+     * 中缀表达式转后缀表达式
+     */
     private void infixToSuffix() {
-        suffixString.clear();
-        for(String str : infixString) {
-            // 如果是运算符
-            if(isOperator(str)) {
-                handleOp(str);
-            }
-            // 如果是数字
-            else {
-                handleNum(str);
+        suffixExpression.clear();
+        for (String token : infixExpression) {
+            if (isOperator(token)) {
+                handleOperator(token);
+            } else if (isBracket(token)) {
+                handleBracket(token);
+            } else {
+                handleNumber(token);
             }
         }
-
-        //将opStack内剩余操作符出栈到后缀表达式
-        while(!opStack.isEmpty()) {
-            suffixString.add(opStack.pop());
+        // 依次弹出opStack剩余操作符，将其加入suffixExpression中
+        while (!opStack.empty()) {
+            suffixExpression.add(opStack.pop());
         }
-
-        System.out.println("后缀表达式: " + suffixString);
-
     }
 
-    private String computeSuffix() {
+    private boolean isOperator(String token) {
+        return operand.containsKey(token);
+    }
 
-        Stack<String> suffix = new Stack<>();
+    private boolean isBracket(String token) {
+        return token.equals("(") || token.equals(")");
+    }
 
-        for (String str : suffixString) {
+    private void handleOperator(String op) {
+        if (opStack.empty() || opStack.peek().equals("(")) {
+            opStack.push(op);
+        } else if (operand.get(op) > operand.get(opStack.peek())) {
+            opStack.push(op);
+        } else {
+            suffixExpression.add(opStack.pop());
+            handleOperator(op);
+        }
+    }
 
-            // 如果是操作符,弹出两个元素，并计算结果，将结果入栈
-            if(isOperator(str)) {
-                double dest = Double.parseDouble(suffix.pop());
-                double sour = Double.parseDouble(suffix.pop());
-                double result = switch (str) {
-                    case "+" -> sour + dest;
-                    case "-" -> sour - dest;
-                    case "*" -> sour * dest;
-                    case "/" -> sour / dest;
+    private void handleBracket(String bracket) {
+        if (bracket.equals("(")) {
+            opStack.push("(");
+        } else {
+            while (!opStack.peek().equals("(")) {
+                suffixExpression.add(opStack.pop());
+            }
+            opStack.pop();      // 丢弃括号
+        }
+    }
+
+    private void handleNumber(String number) {
+        suffixExpression.add(number);
+    }
+
+    /**
+     * 计算逆波兰式
+     * @return 计算结果的字符串形式
+     */
+    private String calcSuffixExpression() {
+        Stack<String> stack = new Stack<>();
+        for (String token : suffixExpression) {
+            if (isOperator(token)) {
+                double operand1 = Double.parseDouble(stack.pop());
+                double operand2 = Double.parseDouble(stack.pop());
+                double resultValue = switch (token) {
+                    case "+" -> operand2 + operand1;
+                    case "-" -> operand2 - operand1;
+                    case "*" -> operand2 * operand1;
+                    case "/" -> operand2 / operand1;
+                    case "^" -> Math.pow(operand2, operand1);
                     default -> 0;
                 };
-                suffix.push(String.valueOf(result));
-            }
-            // 如果是数字，入栈
-            else {
-                suffix.push(str);
-            }
-
-        }
-
-        System.out.println("结果：" + suffix.peek());
-
-        double value = Double.parseDouble(suffix.peek());
-        System.out.println("转换int后：" + value);
-        if((value % 1 - eps) < 0) {
-            return String.valueOf((int) value);
-        }
-        return suffix.peek();
-
-    }
-
-
-    private void handleOp(String op) {
-
-        //如果栈为空或者栈顶仍为左括号，直接入栈
-        if(opStack.isEmpty() || opStack.peek().equals("(")) {
-            opStack.push(op);
-            return;
-        }
-
-        //如果栈不空,并且运算符为"("
-        if(op.equals("(")) {
-            opStack.push(op);
-        }
-
-        //如果栈不空，并且运算符为")"
-        else if(op.equals(")")) {
-            String string = "";
-            //将()之间的所有操作符出栈到后缀表达式，并将"("舍弃
-            while(!"(".equals(string = opStack.pop())) {
-                suffixString.add(string);
+                stack.push(Double.toString(resultValue));
+            } else {
+                stack.push(token);
             }
         }
-
-        //如果栈不空，并且运算符比栈顶优先级高,直接入栈
-        else if(opMap.get(op) > opMap.get(opStack.peek())) {
-            opStack.push(op);
-        }
-
-        //如果栈不空，并且运算符比栈顶优先级高
-        else {
-            suffixString.add(opStack.pop());
-            handleOp(op); //递归调用
-        }
-
+        return stack.pop();
     }
 
-    private void handleNum(String num) {
-        suffixString.add(num);
-    }
-
-
-    private boolean isOperator(String str) {
-        return str.matches("[\\+\\-\\*\\/\\(\\)]");
-    }
-
-    public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
-        String line = input.nextLine();
-        RPN rpn = new RPN();
-        rpn.getResult(line);
-    }
 }
-
